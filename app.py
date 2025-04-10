@@ -2,12 +2,11 @@ import streamlit as st
 import numpy as np
 import time
 from PIL import Image
-import cv2
 import base64
 import os
 
-from compression.dct import dct_compress, apply_block_dct, inverse_block_dct
-from compression.huffman import compress_huffman
+from compression.dct import apply_block_dct, inverse_block_dct
+from compression.huffman import compress_huffman, decompress_huffman
 from utils.metrics import calculate_mse_psnr
 
 st.set_page_config(page_title="Satellite Image Compressor", layout="centered", page_icon="🚀")
@@ -28,19 +27,16 @@ bg_img_right = get_base64_image("assets/stars2.jpg")
 st.markdown(f"""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Ubuntu+Mono&display=swap');
-
         html, body, [class*="css"] {{
             font-family: 'Ubuntu Mono', monospace;
             background-color: #0d1117;
             color: white;
         }}
-
         h1, h2, h3, h4 {{
             font-family: 'Orbitron', sans-serif;
             color: #58a6ff;
             text-shadow: 0 0 8px rgba(88,166,255,0.6);
         }}
-
         .stButton > button {{
             background-color: #1f6feb;
             color: white;
@@ -50,18 +46,15 @@ st.markdown(f"""
             box-shadow: 0 4px 14px rgba(31, 111, 235, 0.4);
             transition: all 0.3s ease;
         }}
-
         .stButton > button:hover {{
             background-color: #3c8aff;
             box-shadow: 0 0 20px rgba(60,138,255,0.8);
             transform: scale(1.05);
         }}
-
         img {{
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
         }}
-
         .block-container {{
             padding-top: 2rem;
             padding-bottom: 2rem;
@@ -70,7 +63,6 @@ st.markdown(f"""
             position: relative;
             z-index: 2;
         }}
-
         .vertical-bar {{
             position: fixed;
             top: 0;
@@ -80,24 +72,20 @@ st.markdown(f"""
             background-size: cover;
             background-position: center;
         }}
-
         .left-bar {{
             left: 0;
             background-image: url("data:image/jpeg;base64,{bg_img_left}");
         }}
-
         .right-bar {{
             right: 0;
             background-image: url("data:image/jpeg;base64,{bg_img_right}");
         }}
-
         hr {{
             border: none;
             height: 1px;
             background: linear-gradient(to right, #58a6ff, transparent);
             margin: 2rem 0;
         }}
-
         .footer {{
             text-align: center;
             font-size: 0.9rem;
@@ -108,11 +96,8 @@ st.markdown(f"""
     <div class="vertical-bar right-bar"></div>
 """, unsafe_allow_html=True)
 
-# App Title
-st.markdown("<h1 style='text-align: center; color: #58a6ff; text-shadow: 0 0 20px #58a6ff;'>🚀 Satellite Image Compressor</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🚀 Satellite Image Compressor</h1>", unsafe_allow_html=True)
 
-# Upload and Process
-compression_method = st.selectbox("Choose Compression Method:", ["Huffman Only", "DCT Only", "DCT + Huffman"])
 uploaded_file = st.file_uploader("Upload a grayscale satellite image (PNG/JPG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
@@ -121,47 +106,41 @@ if uploaded_file is not None:
 
     start_time = time.time()
 
-    if compression_method == "Huffman Only":
-        encoded, codes = compress_huffman(img_array)
-        compressed_size_bits = len(encoded)
-        compressed_size = compressed_size_bits // 8 + (1 if compressed_size_bits % 8 != 0 else 0)
-        decompressed_array = img_array
-        compressed_display = np.full_like(img_array, 127)
+    # Apply DCT
+    dct_blocks, shape = apply_block_dct(img_array)
+    quantized = np.round(dct_blocks / 10).astype(np.int16)
 
-    elif compression_method == "DCT Only":
-        compressed = dct_compress(img_array)
-        compressed_data = compressed["dct"].tobytes()
-        compressed_size = len(compressed_data)
-        decompressed_array = inverse_block_dct(compressed["dct"], img_array.shape)
-        dct_vis = np.log(np.abs(compressed["dct"]) + 1e-5)
-        dct_vis = (dct_vis / np.max(dct_vis) * 255).astype(np.uint8)
-        compressed_display = dct_vis
+    # Visualize DCT coefficients properly (clip to avoid oversaturation)
+    dct_vis = np.clip(np.log(np.abs(dct_blocks) + 1e-3), 0, None)
+    dct_vis = (dct_vis / np.max(dct_vis) * 255).astype(np.uint8)
 
-    else:  # DCT + Huffman
-        dct_blocks, shape = apply_block_dct(img_array)
-        quantized = np.round(dct_blocks / 10).astype(np.int16)
-        encoded, codes = compress_huffman(quantized)
-        compressed_size_bits = len(encoded)
-        compressed_size = compressed_size_bits // 8 + (1 if compressed_size_bits % 8 != 0 else 0)
+    # Huffman encoding
+    encoded, metadata = compress_huffman(quantized)
+    codes = metadata["codes"]
+    shape_info = metadata["shape"]
+    dtype = np.dtype(metadata["dtype"])
+    compressed_size = len(encoded)  # in bytes
 
-        # Decompression simulation
-        dequantized = (quantized * 10).astype(np.float32)
-        decompressed_array = inverse_block_dct(dequantized, shape)
-        compressed_display = np.full_like(img_array, 90)
+    # Decompression
+    decoded_quantized = decompress_huffman(encoded, metadata)
+    dequantized = (decoded_quantized * 10).astype(np.float32)
+    decompressed_array = inverse_block_dct(dequantized, shape)
 
     time_taken = time.time() - start_time
 
+    # Display images
     st.subheader("🖼️ Image Comparison")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.image(Image.fromarray(img_array), caption="Original Image", use_column_width=True, channels="GRAY")
+        st.image(Image.fromarray(img_array), caption="Original", use_column_width=True, channels="GRAY")
     with col2:
-        st.image(Image.fromarray(compressed_display), caption="Compressed View", use_column_width=True, channels="GRAY")
+        st.image(dct_vis, caption="Compressed (DCT Visualization)", use_column_width=True, channels="GRAY")
     with col3:
-        st.image(Image.fromarray(decompressed_array.astype(np.uint8)), caption="Decompressed Image", use_column_width=True, channels="GRAY")
+        st.image(Image.fromarray(decompressed_array.astype(np.uint8)), caption="Decompressed", use_column_width=True, channels="GRAY")
 
+    # Statistics
     st.subheader("📊 Compression Statistics")
-    original_size = img_array.size  # in bytes
+    original_size = img_array.size  # in bytes (1 byte per pixel for grayscale)
     compression_ratio = round(original_size / compressed_size, 2) if compressed_size else 0
     mse, psnr = calculate_mse_psnr(img_array, decompressed_array.astype(np.uint8))
 
@@ -173,4 +152,3 @@ if uploaded_file is not None:
     st.markdown(f"**Time Taken:** {round(time_taken, 3)} seconds")
 
     st.markdown("<div class='footer'>✨ Made with ❤️ and Python by Sumedh ✨</div>", unsafe_allow_html=True)
-

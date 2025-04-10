@@ -173,3 +173,4 @@ if uploaded_file is not None:
     st.markdown(f"**Time Taken:** {round(time_taken, 3)} seconds")
 
     st.markdown("<div class='footer'>✨ Made with ❤️ and Python by Sumedh ✨</div>", unsafe_allow_html=True)
+

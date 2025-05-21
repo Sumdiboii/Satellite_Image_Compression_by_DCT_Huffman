@@ -66,7 +66,7 @@ st.markdown(f"""
         .vertical-bar {{
             position: fixed;
             top: 0;
-            width: 400px;
+            width: 300px;
             height: 100vh;
             z-index: 1;
             background-size: cover;
@@ -74,10 +74,14 @@ st.markdown(f"""
         }}
         .left-bar {{
             left: 0;
+            max-width: 250px;
+            height: 100vh;
             background-image: url("data:image/jpeg;base64,{bg_img_left}");
         }}
         .right-bar {{
             right: 0;
+            max-width: 250px;
+            height: 100vh;
             background-image: url("data:image/jpeg;base64,{bg_img_right}");
         }}
         hr {{
@@ -91,6 +95,15 @@ st.markdown(f"""
             font-size: 0.9rem;
             color: #8b949e;
         }}
+
+        @media (max-width: 768px) {{
+            .left-bar,
+            .right-bar {{
+                display: none;
+            }}
+        }}
+        
+    
     </style>
     <div class="vertical-bar left-bar"></div>
     <div class="vertical-bar right-bar"></div>
@@ -132,11 +145,11 @@ if uploaded_file is not None:
     st.subheader("🖼️ Image Comparison")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.image(Image.fromarray(img_array), caption="Original", use_column_width=True, channels="GRAY")
+        st.image(Image.fromarray(img_array), caption="Original", use_container_width=True, channels="GRAY")
     with col2:
-        st.image(dct_vis, caption="Compressed (DCT Visualization)", use_column_width=True, channels="GRAY")
+        st.image(dct_vis, caption="Compressed (DCT Visualization)", use_container_width=True, channels="GRAY")
     with col3:
-        st.image(Image.fromarray(decompressed_array.astype(np.uint8)), caption="Decompressed", use_column_width=True, channels="GRAY")
+        st.image(Image.fromarray(decompressed_array.astype(np.uint8)), caption="Decompressed", use_container_width=True, channels="GRAY")
 
     # Statistics
     st.subheader("📊 Compression Statistics")

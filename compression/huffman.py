@@ -88,3 +88,4 @@ def decompress_huffman(byte_array, metadata):
     arr = np.array(decoded, dtype=np.dtype(metadata['dtype']))
     return arr.reshape(metadata['shape'])
 
+

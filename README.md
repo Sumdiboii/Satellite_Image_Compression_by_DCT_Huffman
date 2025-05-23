@@ -24,8 +24,13 @@
 <br>
 
 
-[![🚀 View the Project](https://img.shields.io/badge/View%20the%20Project-Streamlit-blue?style=for-the-badge&logo=appveyor)](https://satellite-image-compression.streamlit.app/)  
-&nbsp;&nbsp;&nbsp;  
+
+  <p align="center">
+  <a href="https://satellite-image-compression.streamlit.app/">
+    <img src="https://img.shields.io/badge/View%20the%20Project-Streamlit-blue?style=for-the-badge&logo=appveyor" alt="🚀 View the Project" />
+  </a>
+</p>
+
 
 
 

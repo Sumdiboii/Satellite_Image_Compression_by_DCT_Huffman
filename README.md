@@ -15,6 +15,13 @@
   DCT + Huffman Coding Streamlit App
 </h3>
 
+<br>
+
+![Copy of Copy of Copy of Your paragraph text](https://github.com/user-attachments/assets/562c7ee2-7d4a-4ad1-afe5-2ce0657b950e)
+
+
+<br>
+
 <p align="center">
   <img src="https://img.icons8.com/fluency/96/000000/image.png" width="100" style="margin: 0 20px;" />
   <img src="https://img.icons8.com/fluency/96/000000/video.png" width="100" style="margin: 0 20px;" />

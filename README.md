@@ -17,7 +17,11 @@
 
 <br>
 
-![Copy of Copy of Copy of Your paragraph text](https://github.com/user-attachments/assets/562c7ee2-7d4a-4ad1-afe5-2ce0657b950e)
+<p align="center">
+  
+  <img src="read-me-images/Copy of Copy of Copy of Your paragraph text.png" alt="Pokedex Main Banner Alt" />
+
+</p>
 
 
 <br>
@@ -66,12 +70,15 @@
 <br><br>
 
 
-![image](https://github.com/user-attachments/assets/db30341e-b9ec-4ba1-8b39-87e3d4f36ed8)
+<p align="center">
 
-<br>
-<br>
-
-![image](https://github.com/user-attachments/assets/ec5b99ba-8daa-4189-b24b-9de161062fba)
+  <img src="read-me-images/Screenshot 2025-05-22 002445.png" alt="Screenshot 2025-05-22 002445" />
+  
+  <img src="read-me-images/Screenshot 2025-05-22 010017.png" alt="Screenshot 2025-05-22 010017" />
+  
+  <img src="read-me-images/Screenshot 2025-05-22 010148.png" alt="Screenshot 2025-05-22 010148" />
+  
+</p>
 
 <br>
 <br>
